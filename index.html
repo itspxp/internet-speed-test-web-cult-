@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Speed Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Source+Sans+Pro:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        /* General reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #6e7dff, #ac8ee5); /* gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 400px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .status {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(1);
+        }
+
+        .loading {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .result span {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        /* Smooth loader (loading indicator) */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Internet Speed Test</h1>
+        <div class="status">
+            <p>Click the button below to start testing your internet speed.</p>
+            <button id="start-test">Start Test</button>
+        </div>
+        <div class="loading" id="loading">
+            <div class="loader"></div>
+            <p>Testing...</p>
+        </div>
+        <div id="result" class="result">
+            <p>Download Speed: <span id="download-speed">0</span> Mbps</p>
+            <p>Upload Speed: <span id="upload-speed">0</span> Mbps</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('start-test').addEventListener('click', startTest);
+
+        function startTest() {
+            // Show the loading message and hide results
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('download-speed').textContent = "0";
+            document.getElementById('upload-speed').textContent = "0";
+
+            // Start Download Speed Test
+            testDownloadSpeed();
+        }
+
+        // Test Download Speed
+        function testDownloadSpeed() {
+            const fileUrl = 'https://www.gstatic.com/webp/gallery/1.jpg';  // A small file to test download speed
+            const fileSize = 1024 * 1024; // 1MB in bytes
+            const startTime = new Date().getTime();
+
+            const img = new Image();
+            img.onload = function() {
+                const endTime = new Date().getTime();
+                const duration = (endTime - startTime) / 1000; // in seconds
+                const bitsLoaded = fileSize * 8; // in bits
+                const speedMbps = (bitsLoaded / duration) / 1e6; // Mbps
+
+                // Update download speed result
+                document.getElementById('download-speed').textContent = speedMbps.toFixed(2);
+
+                // Run the Upload Speed test
+                testUploadSpeed();
+            };
+
+            // Trigger image load (to measure download speed)
+            img.src = `${fileUrl}?rand=${Math.random()}`;  // Correct template literal syntax
+        }
+
+        // Test Upload Speed
+        function testUploadSpeed() {
+            const startTime = new Date().getTime();
+            const data = new Blob([new ArrayBuffer(1024 * 1024)]); // 1MB Blob for upload
+
+            // Create an XMLHttpRequest to send the data to a server (we're using httpbin.org to simulate the upload)
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://httpbin.org/post', true);  // Using httpbin.org for mock upload
+            xhr.onload = function() {
+                const endTime = new Date().getTime();
+                const duration = (endTime - startTime) / 1000; // in seconds
+                const speedMbps = (data.size * 8 / duration) / 1e6; // in Mbps
+
+                // Update upload speed result
+                document.getElementById('upload-speed').textContent = speedMbps.toFixed(2);
+
+                // Hide the loading indicator and show results
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+            };
+            xhr.send(data);
+        }
+    </script>
+
+</body>
+</html>
